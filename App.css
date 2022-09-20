@@ -51,6 +51,19 @@
   border-radius:5px;
 }
 
-.SubmitButton {
+.submit-button {
   border-radius:5px;
+}
+
+.disabled-row
+{
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.disabled-button
+{
+  border-radius:5px;
+  color:#4e5156;
+  background-color: #4e5156;
 }

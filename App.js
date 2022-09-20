@@ -9,7 +9,8 @@ class WordleRow extends React.Component {
     this.state = {
       inputArray: ["", "", "", "", ""],
       correctLetterCount: 0,
-      successfulLetters: ""
+      successfulLetters: "",
+      disabled: false
     }
 
     //var updateTracker = " ";
@@ -72,7 +73,7 @@ class WordleRow extends React.Component {
 
   checkInputs() {
     var countCorrect = 0;
-    this.setState({correctLetterCount: 0});
+    this.setState({correctLetterCount: 0, disabled: true});
 
     // for each element in inputArray
     this.state.inputArray.map( (currentValue, index) => {
@@ -117,14 +118,14 @@ class WordleRow extends React.Component {
   render() {
     return(
       <>
-        <row>
+        <tr className={this.state.disabled ? "disabled-row" : ""}>
           <td><input ref={ref => (this.i0 = ref)} type="text" size="1" maxLength="1" name="0" value={ this.state.inputArray[0] } onChange={ e => this.handleChange(0, e)} className="LetterInput"></input></td>
           <td><input ref={ref => (this.i1 = ref)} type="text" size="1" maxLength="1" name="1" value={ this.state.inputArray[1] } onChange={ e => this.handleChange(1, e)} className="LetterInput"></input></td>
           <td><input ref={ref => (this.i2 = ref)} type="text" size="1" maxLength="1" name="2" value={ this.state.inputArray[2] } onChange={ e => this.handleChange(2, e)} className="LetterInput"></input></td>
           <td><input ref={ref => (this.i3 = ref)} type="text" size="1" maxLength="1" name="3" value={ this.state.inputArray[3] } onChange={ e => this.handleChange(3, e)} className="LetterInput"></input></td>
           <td><input ref={ref => (this.i4 = ref)} type="text" size="1" maxLength="1" name="4" value={ this.state.inputArray[4] } onChange={ e => this.handleChange(4, e)} className="LetterInput"></input></td>
-          <td><input ref={ref => (this.i5 = ref)} type="button" name="5" value="Submit" onClick={ this.checkInputs } className="SubmitButton"></input></td>
-        </row>
+          <td><input ref={ref => (this.i5 = ref)} type="button" name="5" value="Submit" onClick={ !this.state.disabled ? this.checkInputs : undefined } className={this.state.disabled ? "disabled-button" : "submit-button"}></input></td>
+        </tr>
 
       </>
     )
@@ -146,7 +147,9 @@ class WordleTable extends React.Component {
     this.state = {
       wordleArray: this.wordleArray,
       currentRow: 1,
-      winningRow: 0
+      winningRow: 0,
+      displayRows: [1,0,0,0,0],
+      enableRows: [1,0,0,0,0]
     }
 
     // use bind method
@@ -158,11 +161,46 @@ class WordleTable extends React.Component {
     // FOR DEBUGGING
     console.log("Old current row: " + this.state.currentRow);
     
-    let nextRow = this.state.currentRow;
-    this.setState(
-      { currentRow: nextRow + 1 },
-      () => { console.log("New current row: " + this.state.currentRow) }
-    );
+    let thisRow = this.state.currentRow;
+    let thisIndex = thisRow - 1;
+    let displayRowsCopy = this.state.displayRows;
+    let enableRowsCopy = this.state.enableRows;
+
+    // disable row just played
+    enableRowsCopy[thisIndex] = 0;
+
+    // if user hasn't lost yet (five tries not yet reached), play next row:
+    if (thisIndex < 4)
+    {
+      // display next row
+      displayRowsCopy[thisIndex + 1 ] = 1;
+      // enable next row
+      enableRowsCopy[thisIndex + 1] = 1;
+    
+      this.setState(
+        {
+          currentRow: thisRow + 1,
+          displayRows: displayRowsCopy,
+          enableRows: enableRowsCopy
+        },
+        () =>
+        { 
+          console.log("New current row: " + this.state.currentRow);
+          console.log("New displayRows: " + this.state.displayRows);
+          console.log("New enableRows: " + this.state.enableRows);
+        }
+      );
+    }
+    // else five tries already reached, end game.
+    else
+    {
+      this.setState(
+        {
+          currentRow: thisRow + 1,
+        },
+        () => { console.log("Game Over! Five tries reached.") }
+      );
+    }
   }
 
   setWinningRow() {
@@ -183,9 +221,16 @@ class WordleTable extends React.Component {
     return(
       <div className="WTdiv">
         <table>
-          <WordleRow wordleArray={this.state.wordleArray} currentRow={this.state.currentRow} incrementCurrentRow={this.incrementCurrentRow} winningRow={this.state.winningRow} setWinningRow={this.setWinningRow} />
+          <tbody>
+            <WordleRow wordleArray={this.state.wordleArray} currentRow={this.state.currentRow} incrementCurrentRow={this.incrementCurrentRow} winningRow={this.state.winningRow} setWinningRow={this.setWinningRow} displayRows={this.state.displayRows} enableRows={this.state.enableRows} />
+            { (this.state.displayRows[1] === 1) ? <WordleRow wordleArray={this.state.wordleArray} currentRow={this.state.currentRow} incrementCurrentRow={this.incrementCurrentRow} winningRow={this.state.winningRow} setWinningRow={this.setWinningRow} displayRows={this.state.displayRows} enableRows={this.state.enableRows} /> : "" }
+            { (this.state.displayRows[2] === 1) ? <WordleRow wordleArray={this.state.wordleArray} currentRow={this.state.currentRow} incrementCurrentRow={this.incrementCurrentRow} winningRow={this.state.winningRow} setWinningRow={this.setWinningRow} displayRows={this.state.displayRows} enableRows={this.state.enableRows} /> : "" }
+            { (this.state.displayRows[3] === 1) ? <WordleRow wordleArray={this.state.wordleArray} currentRow={this.state.currentRow} incrementCurrentRow={this.incrementCurrentRow} winningRow={this.state.winningRow} setWinningRow={this.setWinningRow} displayRows={this.state.displayRows} enableRows={this.state.enableRows} /> : "" }
+            { (this.state.displayRows[4] === 1) ? <WordleRow wordleArray={this.state.wordleArray} currentRow={this.state.currentRow} incrementCurrentRow={this.incrementCurrentRow} winningRow={this.state.winningRow} setWinningRow={this.setWinningRow} displayRows={this.state.displayRows} enableRows={this.state.enableRows} /> : "" }
+          </tbody>
         </table>
         <h5>{ (this.state.winningRow) ? "You Won! Attempts: " + this.state.winningRow : "" }</h5>
+        <h5>{ (this.state.currentRow > 5) ? "Game Over! Five tries reached." : "" }</h5>
       </div>
     )
   }
