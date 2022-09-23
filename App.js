@@ -35,7 +35,7 @@ class WordleRow extends React.Component {
     this.setState({
       inputArray: array
     })
-
+    
     // stores last character entered
     this.updateTracker = event.target.value.toUpperCase();
 
